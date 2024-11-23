@@ -11,19 +11,6 @@ from kivy.effects.scroll import ScrollEffect
 from kivy.uix.scrollview import ScrollView
 
 
-class NoOverscrollEffect(ScrollEffect):
-    """Custom Scroll Effect to Disable Overscroll"""
-
-    def convert_overscroll(self, *args):
-        return 0, 0
-
-    def reset_scale(self, *args):
-        return 0, 0
-
-    def on_scroll_stop(self):
-        self.scroll_y = max(0, min(self.scroll_y, 1))
-        self.scroll_x = max(0, min(self.scroll_x, 1))
-
 
 class Outer(ScrollView):
     masks = ListProperty()
@@ -31,7 +18,7 @@ class Outer(ScrollView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.effect_cls = NoOverscrollEffect
+        self.effect_cls = ScrollEffect
         Window.bind(on_key_down=self._on_keyboard_down, on_key_up=self._on_keyboard_up)
 
     def _on_keyboard_down(self, *args):
@@ -143,7 +130,6 @@ Screen:
         size_hint: None, None
         height: self.minimum_height
         width: self.minimum_width
-
 """
 
 
@@ -162,6 +148,11 @@ class Inner(RecycleView):
         super().__init__(**kwargs)
         self.data = [{"text": f"{random()}"} for _ in range(600)]
 
+    # FIXES SCROLL KineticEffect UPON GRAB
+    def on_touch_down(self, touch):
+        print(11)
+        return super().on_touch_down(touch)
+
 
 class SampleApp(App):
     def build(self):
@@ -169,9 +160,8 @@ class SampleApp(App):
         Window.minimum_width = 500
         Window.minimum_height = 400
         Window.size = (1080, 720)
-        # Window.clearcolor = (1, 1, 1, 1)
         root = Builder.load_string(KV)
-        root.ids.inner.effect_cls = NoOverscrollEffect
+        root.ids.inner.effect_cls = ScrollEffect
         return root
 
 
